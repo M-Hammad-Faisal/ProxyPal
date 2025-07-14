@@ -96,10 +96,20 @@ class ServerWidget(QFrame):
         self.delete_request.emit(self.server_config["id"])
 
     def toggle_connection(self):
-        self.connect_button.setDisabled(True)
         self.connect_request.emit(self.server_config, not self.is_connected)
 
+    def set_is_connecting(self):
+        """Sets the UI to a temporary 'connecting' state for immediate feedback."""
+        self.connect_button.setDisabled(True)
+        self.status_text_label.setText("Connecting...")
+        self.status_text_label.setProperty("connected", False)
+        self.connect_button.setText("CONNECTING...")
+
+        self.status_text_label.style().unpolish(self.status_text_label)
+        self.status_text_label.style().polish(self.status_text_label)
+
     def set_connection_state(self, is_connected):
+        """Sets the final UI state to 'Connected' or 'Disconnected'."""
         self.is_connected = is_connected
         self.connect_button.setDisabled(False)
         self.pie_indicator.set_connected(self.is_connected)

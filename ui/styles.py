@@ -138,6 +138,39 @@ QMessageBox QCheckBox {{
     font-size: 13px;
     padding-top: 10px;
 }}
+
+/* Scroll Area and Scroll Bar Styling */
+QScrollArea {{
+    border: none;
+    background-color: transparent;
+}}
+
+QScrollBar:vertical {{
+    border: none;
+    background: {BORDER};
+    width: 10px;
+    margin: 0px 0px 0px 0px;
+    border-radius: 5px;
+}}
+
+QScrollBar::handle:vertical {{
+    background: {SECONDARY_TEXT};
+    min-height: 20px;
+    border-radius: 5px;
+}}
+
+QScrollBar::handle:vertical:hover {{
+    background: {MENU_TEXT};
+}}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{
+    height: 0px;
+    background: none;
+}}
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
+    background: none;
+}}
 """
 
 
