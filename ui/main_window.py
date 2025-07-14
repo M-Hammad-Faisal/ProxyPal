@@ -1,11 +1,11 @@
-from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
-                             QLabel, QMessageBox, QCheckBox, QInputDialog)
-from PyQt6.QtCore import Qt, QSettings
+from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+                             QLabel, QMessageBox, QInputDialog)
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction
 
 from .dialogs import AddServerDialog, FeedbackDialog
 from .server_widget import ServerWidget
-from .icons import create_icon, HELP_ICON_PATH, FEEDBACK_ICON_PATH, CONTACT_ICON_PATH, ADD_ICON_PATH
+from .icons import create_icon, FEEDBACK_ICON_PATH, CONTACT_ICON_PATH, ADD_ICON_PATH
 from core.parser import parse_access_key
 from core.connection import ConnectionManager
 from core.storage import load_servers, save_servers, save_feedback
@@ -21,9 +21,8 @@ class ProxyPalWindow(QMainWindow):
         self.setMinimumSize(450, 650)
         self.resize(450, 650)
 
-        self.server_widget = None  # Holds the single server card
+        self.server_widget = None
         self.connection_manager = ConnectionManager()
-        self.settings = QSettings("ProxyPal", "Settings")
 
         self.init_ui()
         self.load_initial_server()
@@ -53,9 +52,6 @@ class ProxyPalWindow(QMainWindow):
         file_menu.addAction(quit_action)
 
         help_menu = menu_bar.addMenu("Help")
-        help_action = QAction(create_icon(HELP_ICON_PATH, "#263238"), "Manual Setup Instructions", self)
-        help_action.triggered.connect(self.show_help)
-        help_menu.addAction(help_action)
         feedback_action = QAction(create_icon(FEEDBACK_ICON_PATH, "#263238"), "Submit Feedback", self)
         feedback_action.triggered.connect(self.show_feedback_dialog)
         help_menu.addAction(feedback_action)
@@ -99,8 +95,8 @@ class ProxyPalWindow(QMainWindow):
             self.server_widget = None
             save_servers([])
 
-    def handle_rename_server(self):
-        if self.server_widget:
+    def handle_rename_server(self, server_id, new_name):
+        if self.server_widget and self.server_widget.server_config['id'] == server_id:
             save_servers([self.server_widget.server_config])
 
     def handle_connection_request(self, server_config, connect_flag):
@@ -116,8 +112,6 @@ class ProxyPalWindow(QMainWindow):
 
         if success:
             self.server_widget.set_connection_state(True)
-            if not self.settings.value("hideConnectInstructions", False, type=bool):
-                self.show_manual_proxy_instructions(port)
         else:
             self.server_widget.set_connection_state(False)
             if "Connection Failed" in message or "refused" in message:
@@ -136,31 +130,6 @@ class ProxyPalWindow(QMainWindow):
             save_feedback(dialog.get_feedback())
             self.show_message("Feedback Received", "Thank you for your feedback!", informative=True)
 
-    def show_help(self):
-        self.show_manual_proxy_instructions(self.connection_manager.local_port)
-
-    def show_manual_proxy_instructions(self, port):
-        msg = QMessageBox(self)
-        msg.setWindowTitle("Manual Proxy Setup")
-        msg.setIcon(QMessageBox.Icon.Information)
-        instructions = f"""<b>Manual Configuration Required</b><br><br>
-To route your traffic, please set your system's SOCKS proxy manually:<br><br>
-<ol>
-<li>Open <b>System Settings &rarr; Network</b>.</li>
-<li>Select your active service (e.g., Wi-Fi).</li>
-<li>Click <b>Details...</b> then go to the <b>Proxies</b> tab.</li>
-<li>Enable <b>SOCKS Proxy</b>.</li>
-<li>Set server: <b>127.0.0.1</b>, port: <b>{port}</b></li>
-<li>Click OK and Apply.</li></ol>
-<br>To disconnect, uncheck 'SOCKS Proxy' and click Apply."""
-        msg.setText(instructions)
-        checkbox = QCheckBox("Do not show this message again on connect")
-        checkbox.setChecked(self.settings.value("hideConnectInstructions", False, type=bool))
-        checkbox.stateChanged.connect(
-            lambda state: self.settings.setValue("hideConnectInstructions", state == Qt.CheckState.Checked.value))
-        msg.setCheckBox(checkbox)
-        msg.exec()
-
     def show_message(self, title, text, informative=False):
         msg = QMessageBox(self)
         msg.setWindowTitle(title)
@@ -172,4 +141,3 @@ To route your traffic, please set your system's SOCKS proxy manually:<br><br>
     def closeEvent(self, event):
         self.connection_manager.disconnect()
         event.accept()
-
