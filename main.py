@@ -58,8 +58,9 @@ def main():
     """
     app = ThemedApplication(sys.argv)
 
+    app.setQuitOnLastWindowClosed(False)
+
     window = ProxyPalWindow()
-    window.show()
 
     sys.exit(app.exec())
 
