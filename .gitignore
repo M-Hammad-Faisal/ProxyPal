@@ -1,0 +1,9 @@
+build/
+dist/
+.venv/
+venv/
+proxypal_feedback.json
+proxypal_servers.json
+.env
+.idea/
+
