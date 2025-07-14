@@ -4,11 +4,12 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QLab
 class AddServerDialog(QDialog):
     """Dialog for adding a new server via access key."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, initial_key=""):
         super().__init__(parent)
         self.setObjectName("AddServerDialog")
         self.setFixedSize(450, 300)
         self.setWindowTitle("Add Access Key")
+        self.initial_key = initial_key
         self.init_ui()
 
     def init_ui(self):
@@ -19,11 +20,14 @@ class AddServerDialog(QDialog):
         title = QLabel("Add access key")
         title.setStyleSheet("font-size: 22px; font-weight: 500;")
         subtitle = QLabel(
-            'Need a new access key? <a href="[https://outline.com](https://outline.com)" style="color: #009688;">Create one here.</a>')
+            'Need a new access key? <a href="https://getoutline.org/get-access/" style="color: #009688;">Create one here.</a>')
         subtitle.setOpenExternalLinks(True)
 
         self.key_input = QTextEdit()
         self.key_input.setPlaceholderText("ss://...")
+
+        if self.initial_key:
+            self.key_input.setText(self.initial_key)
 
         button_layout = QHBoxLayout()
         button_layout.addStretch()

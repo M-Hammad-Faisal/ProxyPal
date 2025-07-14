@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-                             QLabel, QMessageBox, QInputDialog)
+                             QMessageBox, QApplication)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction
 
@@ -62,7 +62,22 @@ class ProxyPalWindow(QMainWindow):
         help_menu.addAction(contact_action)
 
     def show_add_server_dialog(self):
-        dialog = AddServerDialog(self)
+        """
+        Checks the clipboard for a key and then shows the AddServerDialog,
+        pre-populating it if a valid key is found.
+        """
+        clipboard = QApplication.clipboard()
+        clipboard_text = clipboard.text().strip()
+        initial_key = ""
+
+        if clipboard_text.startswith("ss://"):
+            try:
+                parse_access_key(clipboard_text)
+                initial_key = clipboard_text
+            except ValueError:
+                pass
+
+        dialog = AddServerDialog(self, initial_key=initial_key)
         if dialog.exec():
             key = dialog.get_key()
             if key:
