@@ -5,6 +5,7 @@ from PyQt6.QtGui import QAction
 
 from .dialogs import AddServerDialog, FeedbackDialog
 from .server_widget import ServerWidget
+from .onboarding_widget import OnboardingWidget
 from .icons import create_icon, FEEDBACK_ICON_PATH, CONTACT_ICON_PATH, ADD_ICON_PATH
 from core.parser import parse_access_key
 from core.connection import ConnectionManager
@@ -22,10 +23,11 @@ class ProxyPalWindow(QMainWindow):
         self.resize(450, 650)
 
         self.server_widget = None
+        self.onboarding_widget = None
         self.connection_manager = ConnectionManager()
 
         self.init_ui()
-        self.load_initial_server()
+        self.setup_initial_state()
 
     def init_ui(self):
         self.create_menu_bar()
@@ -38,6 +40,25 @@ class ProxyPalWindow(QMainWindow):
 
         self.card_container_layout = QVBoxLayout()
         main_layout.addLayout(self.card_container_layout)
+
+    def setup_initial_state(self):
+        """Checks for saved servers and shows either the server card or the onboarding screen."""
+        servers = load_servers()
+        if not servers:
+            self.show_onboarding_screen()
+        else:
+            self.add_server(servers[0]['id'])
+
+    def show_onboarding_screen(self):
+        """Creates and displays the onboarding widget."""
+        if self.server_widget:
+            self.server_widget.deleteLater()
+            self.server_widget = None
+
+        if not self.onboarding_widget:
+            self.onboarding_widget = OnboardingWidget()
+            self.onboarding_widget.add_server_requested.connect(self.show_add_server_dialog)
+            self.card_container_layout.addWidget(self.onboarding_widget)
 
     def create_menu_bar(self):
         menu_bar = self.menuBar()
@@ -62,10 +83,7 @@ class ProxyPalWindow(QMainWindow):
         help_menu.addAction(contact_action)
 
     def show_add_server_dialog(self):
-        """
-        Checks the clipboard for a key and then shows the AddServerDialog,
-        pre-populating it if a valid key is found.
-        """
+
         clipboard = QApplication.clipboard()
         clipboard_text = clipboard.text().strip()
         initial_key = ""
@@ -86,6 +104,10 @@ class ProxyPalWindow(QMainWindow):
     def add_server(self, key):
         """Adds or replaces the single server card."""
         try:
+            if self.onboarding_widget:
+                self.onboarding_widget.deleteLater()
+                self.onboarding_widget = None
+
             config = parse_access_key(key)
 
             if self.server_widget:
@@ -109,6 +131,7 @@ class ProxyPalWindow(QMainWindow):
             self.server_widget.deleteLater()
             self.server_widget = None
             save_servers([])
+            self.show_onboarding_screen()
 
     def handle_rename_server(self, server_id, new_name):
         if self.server_widget and self.server_widget.server_config['id'] == server_id:
@@ -133,11 +156,6 @@ class ProxyPalWindow(QMainWindow):
                 self.show_message("Connection Failed", message)
             elif "Disconnected" not in message:
                 self.show_message("Connection Error", message)
-
-    def load_initial_server(self):
-        all_configs = load_servers()
-        if all_configs:
-            self.add_server(all_configs[0]['id'])
 
     def show_feedback_dialog(self):
         dialog = FeedbackDialog(self)
