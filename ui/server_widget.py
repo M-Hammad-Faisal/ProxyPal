@@ -4,7 +4,7 @@ from PyQt6.QtGui import QAction, QColor
 from PyQt6.QtCore import Qt, pyqtSignal, QSize
 
 from .status_indicator import PieStatusIndicator
-from .icons import create_icon, MORE_VERT_ICON_PATH
+from .icons import create_filled_icon, MORE_VERT_ICON_PATH
 
 
 class ServerWidget(QFrame):
@@ -35,7 +35,6 @@ class ServerWidget(QFrame):
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Top part: Server details and menu
         top_frame = QFrame()
         top_layout = QHBoxLayout(top_frame)
         top_layout.setContentsMargins(20, 20, 15, 10)
@@ -52,14 +51,13 @@ class ServerWidget(QFrame):
         top_layout.addStretch()
 
         self.card_menu_button = QPushButton()
-        self.card_menu_button.setIcon(create_icon(MORE_VERT_ICON_PATH, "#546E7A"))
+        self.card_menu_button.setIcon(create_filled_icon(MORE_VERT_ICON_PATH, "#546E7A"))
         self.card_menu_button.setObjectName("CardMenuButton")
         self.card_menu_button.setIconSize(QSize(24, 24))
         self.setup_card_menu()
         top_layout.addWidget(self.card_menu_button)
         main_layout.addWidget(top_frame)
 
-        # Middle part: Status graphic and text
         status_layout = QVBoxLayout()
         status_layout.setContentsMargins(20, 20, 20, 20)
         status_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -71,7 +69,6 @@ class ServerWidget(QFrame):
         status_layout.addWidget(self.status_text_label)
         main_layout.addLayout(status_layout, 1)
 
-        # Bottom part: Connect button
         self.connect_button = QPushButton("CONNECT")
         self.connect_button.setObjectName("ConnectButton")
         self.connect_button.clicked.connect(self.toggle_connection)
@@ -104,7 +101,7 @@ class ServerWidget(QFrame):
 
     def set_connection_state(self, is_connected):
         self.is_connected = is_connected
-        self.connect_button.setDisabled(False)  # Re-enable after operation
+        self.connect_button.setDisabled(False)
         self.pie_indicator.set_connected(self.is_connected)
         if self.is_connected:
             self.status_text_label.setText("Connected")

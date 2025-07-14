@@ -6,8 +6,8 @@ from PyQt6.QtGui import QAction
 from .dialogs import AddServerDialog, FeedbackDialog
 from .server_widget import ServerWidget
 from .onboarding_widget import OnboardingWidget
-from .icons import create_icon, FEEDBACK_ICON_PATH, CONTACT_ICON_PATH, ADD_ICON_PATH, TRAY_ICON_CONNECTED, \
-    TRAY_ICON_DISCONNECTED
+from .icons import (create_filled_icon, create_outlined_icon, FEEDBACK_ICON_PATH,
+                    CONTACT_ICON_PATH, ADD_ICON_PATH, APP_ICON_PATH, TRAY_ICON_CONNECTED, TRAY_ICON_DISCONNECTED)
 from core.parser import parse_access_key
 from core.connection import ConnectionManager
 from core.storage import load_servers, save_servers, save_feedback
@@ -22,6 +22,8 @@ class ProxyPalWindow(QMainWindow):
         self.setWindowTitle("ProxyPal")
         self.setMinimumSize(450, 650)
         self.resize(450, 650)
+
+        self.setWindowIcon(create_filled_icon(APP_ICON_PATH, "#263238", size=128))
 
         self.server_widget = None
         self.onboarding_widget = None
@@ -78,9 +80,11 @@ class ProxyPalWindow(QMainWindow):
     def update_tray_icon(self, connected: bool):
         """Updates the tray icon image based on connection status."""
         if connected:
-            icon = create_icon(TRAY_ICON_CONNECTED, "#00BFA5")
+            icon = create_filled_icon(TRAY_ICON_CONNECTED, "#000000", size=48)
         else:
-            icon = create_icon(TRAY_ICON_DISCONNECTED, "#555555")
+            icon = create_outlined_icon(TRAY_ICON_DISCONNECTED, "#000000", size=48)
+
+        icon.setIsMask(True)
         self.tray_icon.setIcon(icon)
 
     def setup_initial_state(self):
@@ -167,8 +171,9 @@ class ProxyPalWindow(QMainWindow):
 
     def create_menu_bar(self):
         menu_bar = self.menuBar()
+
         file_menu = menu_bar.addMenu("File")
-        add_action = QAction(create_icon(ADD_ICON_PATH, "#263238"), "Add/Replace Server", self)
+        add_action = QAction(create_filled_icon(ADD_ICON_PATH, "#263238"), "Add/Replace Server", self)
         add_action.triggered.connect(self.show_add_server_dialog)
         file_menu.addAction(add_action)
         file_menu.addSeparator()
@@ -176,10 +181,10 @@ class ProxyPalWindow(QMainWindow):
         quit_action.triggered.connect(self.hide)
         file_menu.addAction(quit_action)
         help_menu = menu_bar.addMenu("Help")
-        feedback_action = QAction(create_icon(FEEDBACK_ICON_PATH, "#263238"), "Submit Feedback", self)
+        feedback_action = QAction(create_filled_icon(FEEDBACK_ICON_PATH, "#263238"), "Submit Feedback", self)
         feedback_action.triggered.connect(self.show_feedback_dialog)
         help_menu.addAction(feedback_action)
-        contact_action = QAction(create_icon(CONTACT_ICON_PATH, "#263238"), "Contact Us", self)
+        contact_action = QAction(create_filled_icon(CONTACT_ICON_PATH, "#263238"), "Contact Us", self)
         contact_action.triggered.connect(
             lambda: self.show_message("Contact Us", "For support, please email:<br><b>hammadfaisal178@gmail.com</b>",
                                       informative=True))

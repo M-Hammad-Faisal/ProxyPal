@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
 from PyQt6.QtCore import Qt, pyqtSignal, QSize
-from .icons import create_icon, ONBOARDING_ICON_PATH
+from .icons import create_filled_icon, ONBOARDING_ICON_PATH
 
 
 class OnboardingWidget(QWidget):
@@ -21,7 +21,7 @@ class OnboardingWidget(QWidget):
         main_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         icon_label = QLabel()
-        icon_label.setPixmap(create_icon(ONBOARDING_ICON_PATH, "#90A4AE").pixmap(QSize(80, 80)))
+        icon_label.setPixmap(create_filled_icon(ONBOARDING_ICON_PATH, "#90A4AE", size=80).pixmap(QSize(80, 80)))
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         title = QLabel("Welcome to ProxyPal")
