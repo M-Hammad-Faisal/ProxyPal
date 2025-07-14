@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui import QPainter, QColor, QBrush, QPen
-from PyQt6.QtCore import QPropertyAnimation, pyqtProperty, QEasingCurve
+from PyQt6.QtCore import QPropertyAnimation, pyqtProperty, QEasingCurve, Qt
 
 
 class PieStatusIndicator(QWidget):
@@ -11,7 +11,11 @@ class PieStatusIndicator(QWidget):
         self._angle = 0
         self._connected = False
         self.setMinimumSize(200, 200)
-        self.animation = QPropertyAnimation(self, b"angle")
+
+        self._connected_color = QColor("#00BFA5")
+        self._disconnected_color = QColor("#BDBDBD")
+
+        self.animation = QPropertyAnimation(self, b"angle", self)
         self.animation.setDuration(1200)
         self.animation.setStartValue(0)
         self.animation.setEndValue(360 * 16)
@@ -29,10 +33,7 @@ class PieStatusIndicator(QWidget):
             int(-(self.height() - side) / 2)
         ).adjusted(20, 20, -20, -20)
 
-        if self._connected:
-            color = QColor("#00BFA5")
-        else:
-            color = QColor("#BDBDBD")
+        color = self._connected_color if self._connected else self._disconnected_color
 
         painter.setBrush(QBrush(color))
         painter.setPen(QPen(color, 2))
@@ -49,8 +50,32 @@ class PieStatusIndicator(QWidget):
 
     def set_connected(self, connected):
         self._connected = connected
+
+        if not connected:
+            self._angle = 360 * 16
+
         self.animation.setDirection(
             QPropertyAnimation.Direction.Forward if connected else QPropertyAnimation.Direction.Backward
         )
         if self.animation.state() != QPropertyAnimation.State.Running:
             self.animation.start()
+
+        self.update()
+
+    @pyqtProperty(QColor)
+    def connectedColor(self) -> QColor:
+        return self._connected_color
+
+    @connectedColor.setter
+    def connectedColor(self, color: QColor):
+        self._connected_color = color
+        self.update()
+
+    @pyqtProperty(QColor)
+    def disconnectedColor(self) -> QColor:
+        return self._disconnected_color
+
+    @disconnectedColor.setter
+    def disconnectedColor(self, color: QColor):
+        self._disconnected_color = color
+        self.update()
