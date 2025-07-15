@@ -1,3 +1,5 @@
+import platform
+import requests
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QMessageBox, QApplication, QSystemTrayIcon, QMenu,
                              QScrollArea, QSpacerItem)
 from PyQt6.QtCore import Qt
@@ -10,12 +12,11 @@ from .icons import (create_filled_icon, create_outlined_icon, FEEDBACK_ICON_PATH
                     CONTACT_ICON_PATH, ADD_ICON_PATH, APP_ICON_PATH, TRAY_ICON_CONNECTED, TRAY_ICON_DISCONNECTED)
 from core.parser import parse_access_key
 from core.connection import ConnectionManager
-from core.storage import load_servers, add_server as save_new_server, delete_server as remove_server, save_servers, \
-    save_feedback
+from core.storage import load_servers, add_server as save_new_server, delete_server as remove_server, save_servers
 
 
 class ProxyPalWindow(QMainWindow):
-    """The main application window, with fixes for UI state and tray menu shortcuts."""
+    """The main application window, with all features and fixes."""
 
     def __init__(self):
         super().__init__()
@@ -78,15 +79,16 @@ class ProxyPalWindow(QMainWindow):
         self.server_widgets.append(server_widget)
 
     def _update_layout(self):
-        """
-        Ensures all server cards are always aligned to the top of the layout.
-        """
         for i in reversed(range(self.card_container_layout.count())):
             item = self.card_container_layout.itemAt(i)
             if isinstance(item, QSpacerItem):
                 self.card_container_layout.removeItem(item)
-
-        self.card_container_layout.addStretch(1)
+                break
+        if len(self.server_widgets) == 1:
+            self.card_container_layout.insertStretch(0, 1)
+            self.card_container_layout.addStretch(1)
+        else:
+            self.card_container_layout.addStretch(1)
 
     def add_server(self, key):
         try:
@@ -146,10 +148,6 @@ class ProxyPalWindow(QMainWindow):
             self.on_connection_result(False, "Disconnected", 0, server_config['id'])
 
     def on_connection_result(self, success, message, port, server_id):
-        """
-        Handles the result from the connection worker and updates UI state.
-        The 'port' parameter was missing, causing the slot to fail silently.
-        """
         if success:
             old_active_id = self.active_connection_id
             self.active_connection_id = server_id
@@ -181,25 +179,19 @@ class ProxyPalWindow(QMainWindow):
             self.status_action.setText("Disconnected")
 
     def create_tray_icon(self):
-        """Creates the tray icon menu with visible shortcuts."""
         self.tray_icon = QSystemTrayIcon(self)
         self.update_tray_icon(connected=False)
         tray_menu = QMenu()
-
         open_action = QAction("Open\t⌘O", self)
         open_action.triggered.connect(self.show_window)
-
         self.status_action = QAction("Disconnected", self)
         self.status_action.setEnabled(False)
-
         quit_action = QAction("Quit\t⌘Q", self)
         quit_action.triggered.connect(self.quit_application)
-
         tray_menu.addAction(open_action)
         tray_menu.addAction(self.status_action)
         tray_menu.addSeparator()
         tray_menu.addAction(quit_action)
-
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
 
@@ -263,9 +255,25 @@ class ProxyPalWindow(QMainWindow):
 
     def show_feedback_dialog(self):
         dialog = FeedbackDialog(self)
-        if dialog.exec() and dialog.get_feedback():
-            save_feedback(dialog.get_feedback())
-            self.show_message("Feedback Received", "Thank you for your feedback!", informative=True)
+        if dialog.exec():
+            feedback_message = dialog.get_feedback()
+            if feedback_message:
+                formspree_url = "https://formspree.io/f/mvgqopya"
+                payload = {
+                    "message": feedback_message,
+                    "os": platform.system(),
+                    "os_version": platform.mac_ver()[0],
+                    "app_version": "1.0"
+                }
+                try:
+                    response = requests.post(formspree_url, data=payload)
+                    response.raise_for_status()
+                    self.show_message("Feedback Sent", "Thank you! Your feedback has been successfully sent.",
+                                      informative=True)
+                except requests.exceptions.RequestException as e:
+                    print(f"Error sending feedback: {e}")
+                    self.show_message("Submission Failed",
+                                      "Could not send feedback. Please check your internet connection and try again.")
 
     def show_message(self, title, text, informative=False):
         msg = QMessageBox(self)

@@ -1,3 +1,4 @@
 PyQt6
 psutil
 py2app
+requests

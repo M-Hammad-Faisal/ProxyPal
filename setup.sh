@@ -2,7 +2,6 @@
 
 #==============================================================================
 # ProxyPal Setup Script
-# This script checks for dependencies and installs them.
 #==============================================================================
 
 # --- Helper Functions ---
@@ -44,15 +43,15 @@ else
     print_success "shadowsocks-libev is already installed."
 fi
 
-# --- 3. Check for and Install Python Dependencies ---
+# --- 3. Install Python Dependencies ---
 print_info "Checking for Python 3 and pip..."
 if ! command -v python3 &> /dev/null || ! command -v pip3 &> /dev/null; then
     print_error "Python 3 and pip3 are required. Please install them."
 fi
 print_success "Python 3 and pip3 found."
 
-print_info "Installing Python packages (PyQt6, psutil)..."
-pip3 install PyQt6 psutil
+print_info "Installing Python packages from requirements.txt..."
+pip3 install -r requirements.txt
 print_success "Python packages installed."
 
 # --- 4. Set Permissions for the Manager Script ---

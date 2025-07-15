@@ -35,6 +35,7 @@ hope it helps you as much as it has helped me and my friends!
   access key is copied to the clipboard.
 - **Polished User Experience**: Includes a friendly onboarding screen for new users and a clean, intuitive interface for
   managing connections.
+- **Functional Feedback System**: Allows users to send feedback directly to the developer via a web form.
 - **Modern UI**: Aesthetically pleasing interface built with Python and PyQt6, inspired by the Outline client.
 
 ---
@@ -44,26 +45,10 @@ hope it helps you as much as it has helped me and my friends!
 Before you begin, ensure you have the following installed on your macOS system:
 
 - **Python 3**: The application is written in Python 3.
-- **PyQt6**: The GUI framework used for the application.
+- **pip**: The Python package installer.
+- **Homebrew**: The package manager for macOS, used to install `shadowsocks-libev`.
 
-```Bash
-pip install PyQt6
-```
-
-**psutil**: A library for process management.
-
-```Bash
-
-pip install psutil
-```
-
-**shadowsocks-libev**: The underlying command-line tool that handles the proxy connection. The easiest way to install it
-is
-with [Homebrew](https://brew.sh/):
-
-```Bash
-brew install shadowsocks-libev
-```
+The `setup.sh` script will handle installing the necessary Python packages and `shadowsocks-libev`.
 
 ---
 
@@ -75,11 +60,19 @@ Follow these steps to get ProxyPal up and running.
 Clone or download the project files to your local machine.
 
 ```Bash
-git clone https://github.com/your-username/proxypal.git
+git clone https://github.com/M-Hammad-Faisal/proxypal.git
 cd proxypal
 ```
 
-**2. Make the Manager Script Executable**
+**2. Run the Setup Script**
+The `setup.sh` script will check for dependencies and install everything you need. You only need to run this once.
+
+```Bash
+chmod +x setup.sh
+./setup.sh
+```
+
+**3. Make the Manager Script Executable**
 The `proxy_manager.sh` script requires execute permissions to run. You only need to do this once.
 
 ```Bash
@@ -115,11 +108,11 @@ This script will:
 
 - **Managing Servers:**
     - Click the three-dot menu on any server card to **Rename** or **Forget** (delete) it.
+
 - **Using the Tray Icon:**
     - The app lives in your macOS menu bar.
     - **Right-click** (or control-click) the icon to open a menu where you can see the connection status, open the
-      window,
-      or quit the application.
+      window, or quit the application.
 
 ---
 
@@ -130,7 +123,7 @@ The project is organized into two main directories:
 - `core/`: Contains the backend logic for the application.
     - `connection.py`: Manages the `ss-local` subprocess and connection lifecycle.
     - `parser.py`: Handles parsing of `ss://` access keys.
-    - `storage.py`: Manages saving and loading server configurations to a JSON file.
+    - `storage.py`: Manages saving and loading server configurations.
 - `ui/`: Contains all the user interface components.
     - `main_window.py`: The main application window and central controller.
     - `server_widget.py`: The UI for a single server card.
