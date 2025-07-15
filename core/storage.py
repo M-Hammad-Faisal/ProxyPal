@@ -1,18 +1,29 @@
 import json
-import os
 import time
+from pathlib import Path
 
-CONFIG_FILE = "proxypal_servers.json"
-FEEDBACK_FILE = "proxypal_feedback.json"
+APP_SUPPORT_DIR = Path.home() / "Library" / "Application Support" / "ProxyPal"
+
+CONFIG_FILE = APP_SUPPORT_DIR / "servers.json"
+FEEDBACK_FILE = APP_SUPPORT_DIR / "feedback.json"
+
+
+def _ensure_dir_exists():
+    """
+    A helper function to ensure the application support directory exists.
+    It creates the directory if it's not already there.
+    """
+    APP_SUPPORT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def load_servers() -> list:
     """
-    Loads all server configurations from the local JSON file.
+    Loads all server configurations from the standard application support directory.
 
     Returns:
         A list of server configuration dictionaries, or an empty list if not found.
     """
+    _ensure_dir_exists()
     try:
         with open(CONFIG_FILE, "r") as f:
             return json.load(f)
@@ -22,11 +33,12 @@ def load_servers() -> list:
 
 def save_servers(server_configs: list):
     """
-    Saves the entire list of server configurations to the JSON file.
+    Saves the entire list of server configurations to the application support directory.
 
     Args:
         server_configs: The full list of server configuration dictionaries.
     """
+    _ensure_dir_exists()
     try:
         with open(CONFIG_FILE, "w") as f:
             json.dump(server_configs, f, indent=4)
@@ -60,19 +72,25 @@ def save_feedback(feedback_message: str):
     """
     Saves a user's feedback message to a JSON file with a timestamp.
     """
-    feedback = {
+    _ensure_dir_exists()
+    feedback_entry = {
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
         "message": feedback_message
     }
+
     try:
         feedbacks = []
-        if os.path.exists(FEEDBACK_FILE):
+        if FEEDBACK_FILE.exists():
             with open(FEEDBACK_FILE, "r") as f:
-                feedbacks = json.load(f)
+                try:
+                    feedbacks = json.load(f)
+                except json.JSONDecodeError:
+                    feedbacks = []
 
-        feedbacks.append(feedback)
+        feedbacks.append(feedback_entry)
 
         with open(FEEDBACK_FILE, "w") as f:
             json.dump(feedbacks, f, indent=4)
+
     except (IOError, json.JSONDecodeError) as e:
         print(f"Error saving feedback: {e}")
