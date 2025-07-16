@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #==============================================================================
-# ProxyPal Setup Script
+# ProxyPal Setup Script (with Virtual Environment)
 #==============================================================================
 
 # --- Helper Functions ---
@@ -43,18 +43,24 @@ else
     print_success "shadowsocks-libev is already installed."
 fi
 
-# --- 3. Install Python Dependencies ---
-print_info "Checking for Python 3 and pip..."
-if ! command -v python3 &> /dev/null || ! command -v pip3 &> /dev/null; then
-    print_error "Python 3 and pip3 are required. Please install them."
+# --- 3. Create Python Virtual Environment ---
+print_info "Checking for Python 3..."
+if ! command -v python3 &> /dev/null; then
+    print_error "Python 3 is required. Please install it."
 fi
-print_success "Python 3 and pip3 found."
+print_success "Python 3 found."
 
+print_info "Creating Python virtual environment in './venv'..."
+python3 -m venv venv
+print_success "Virtual environment created."
+
+# --- 4. Install Python Dependencies into Virtual Environment ---
 print_info "Installing Python packages from requirements.txt..."
-pip3 install -r requirements.txt
+# Use the pip from the newly created venv to install packages
+./venv/bin/pip install -r requirements.txt
 print_success "Python packages installed."
 
-# --- 4. Set Permissions for the Manager Script ---
+# --- 5. Set Permissions for the Manager Script ---
 print_info "Setting permissions for proxy_manager.sh..."
 if [ -f "proxy_manager.sh" ]; then
     chmod +x proxy_manager.sh
